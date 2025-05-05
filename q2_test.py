@@ -1,14 +1,13 @@
 import pandas as pd
 from q2_train import predict_same_day
 
-# Example: pretend tomorrow’s forecast is 83 °F / 65 °F, no precip, etc.
 tomorrow = pd.Series({
-    "High Temp": 77,
-    "Low Temp":  73.9,
-    "Precipitation": 1.08,
-    # temporal extras (code expects these):
-    "Month": 7,           # july
-    "DayOfWeek": 6,       # 0=Mon … 6=Sun ; here: Wednesday
+    "High Temp": 82.9,
+    "Low Temp":  66.9,
+    "Precipitation": 0.4,
+    # temporal extras (assumed access because forecast requires day info)
+    "Month": 6,           # 0=Jan, 11=Dec
+    "DayOfWeek": 5,       # 0=Mon, 6=Sun
     "IsWeekend": 1
 })
 

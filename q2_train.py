@@ -12,9 +12,9 @@ DEVICE     = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
 LR         = 1e-3
 EPOCHS     = 120
-TRAIN_FRAC   = 0.85     # 85/15 train/test split
-AUG_FACTOR   = 4        # 4x train data with noise to reduce overfitting
-NOISE_STD_FRAC = 0.15   # noise for data augmentation
+TRAIN_FRAC   = 0.85 # 85/15 train/test split
+AUG_FACTOR   = 1 # 4x train data with noise to reduce overfitting
+NOISE_STD_FRAC = 0.15 # noise for data augmentation
 SEED       = 42
 torch.manual_seed(SEED); 
 np.random.seed(SEED)
@@ -27,13 +27,13 @@ def _to_num(series):
     return (series.astype(str).str.replace(",", "").replace({"T": 0, "": np.nan, " ": np.nan}).astype(float))
 
 # parses dates despite incomplete info
-def _safe_parse_dates(series: pd.Series, default_year=2024):
+def _safe_parse_dates(series: pd.Series, default_year=2016):
     txt = series.astype(str).str.strip()
     needs_year = ~txt.str.contains(r"\d{4}")
     txt.loc[needs_year] = txt.loc[needs_year] + f" {default_year}"
     dates = pd.to_datetime(txt, format="%m/%d/%Y", errors="coerce")
     mask = dates.isna()
-    if mask.any():           # fallback: 01‑Jan‑2024
+    if mask.any(): # fallback: 01‑Jan‑2016
         dates.loc[mask] = pd.to_datetime(txt.loc[mask], format="%d-%b %Y", errors="coerce")
     return dates
 
@@ -180,7 +180,7 @@ def run_epoch(model, loader, criterion, opt=None):
     acc  = 100.0 - mape
     return np.mean(losses), mae, rmse, acc
 
-#forecast to bike total helper
+# forecast to bike total helper
 def predict_same_day(weather_row: pd.Series):
     model = WeatherCNN()
     model.load_state_dict(torch.load(SAVE_PATH, map_location=DEVICE))
@@ -193,7 +193,7 @@ def predict_same_day(weather_row: pd.Series):
     with torch.no_grad():
         return model(x).cpu().item()
 
-#create dataloaders for training
+# create dataloaders for training
 train_df, val_df, test_df = load_data()
 scaler = StandardScaler()
 

@@ -7,18 +7,18 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 
 # hyperparams
-CSV_PATH   = Path("nyc_bicycle_counts_2016.csv")
-DEVICE     = "cuda" if torch.cuda.is_available() else "cpu"
+CSV_PATH = Path("nyc_bicycle_counts_2016.csv")
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 BATCH_SIZE = 32
-LR         = 1e-3
-EPOCHS     = 120
-TRAIN_FRAC   = 0.85     # 85/15 train/test split
-AUG_FACTOR   = 2        # 4x train data with noise to reduce overfitting
-NOISE_STD_FRAC = 0.15   # noise for data augmentation
-SEED       = 42
+LR = 1e-3
+EPOCHS = 120
+TRAIN_FRAC = 0.85 # 85/15 train/test split
+AUG_FACTOR = 2 # 4x train data with noise to reduce overfitting
+NOISE_STD_FRAC = 0.15 # noise for data augmentation
+SEED = 42
 torch.manual_seed(SEED); 
 np.random.seed(SEED)
-SAVE_PATH  = "q3_cnn_weights.pth"
+SAVE_PATH = "q3_cnn_weights.pth"
 # model features
 FEATURE_COLS = ["Brooklyn Bridge", "Manhattan Bridge", "Queensboro Bridge", "Williamsburg Bridge", "Total"]
 
@@ -27,13 +27,13 @@ def _to_num(series):
     return (series.astype(str).str.replace(",", "").replace({"T": 0, "": np.nan, " ": np.nan}).astype(float))
 
 # parses dates despite incomplete info
-def _safe_parse_dates(series: pd.Series, default_year=2024):
+def _safe_parse_dates(series: pd.Series, default_year=2016):
     txt = series.astype(str).str.strip()
     needs_year = ~txt.str.contains(r"\d{4}")
     txt.loc[needs_year] = txt.loc[needs_year] + f" {default_year}"
     dates = pd.to_datetime(txt, format="%m/%d/%Y", errors="coerce")
     mask = dates.isna()
-    if mask.any():           # fallback: 01‑Jan‑2024
+    if mask.any(): # fallback: 01‑Jan‑2016
         dates.loc[mask] = pd.to_datetime(txt.loc[mask], format="%d-%b %Y", errors="coerce")
     return dates
 
@@ -158,7 +158,7 @@ def run_epoch(model, loader, criterion, opt=None):
 
     for x, y in loader:
         x, y = x.to(DEVICE), y.to(DEVICE)
-        out = model(x)  # shape: (B, 7)
+        out = model(x) # shape is (B, 7)
         loss = criterion(out, y)
         if opt:
             opt.zero_grad(); loss.backward(); opt.step()
@@ -192,19 +192,19 @@ train_df, val_df, test_df = load_data()
 scaler = StandardScaler()
 
 train_ds = BikeDataset(train_df, scaler, fit=True)
-val_ds   = BikeDataset(val_df,   scaler, fit=False)
-test_ds  = BikeDataset(test_df,  scaler, fit=False)
+val_ds = BikeDataset(val_df, scaler, fit=False)
+test_ds = BikeDataset(test_df, scaler, fit=False)
 
 train_dl = DataLoader(train_ds, BATCH_SIZE, shuffle=True)
-val_dl   = DataLoader(val_ds,   BATCH_SIZE, shuffle=False)
-test_dl  = DataLoader(test_ds,  BATCH_SIZE, shuffle=False)
+val_dl = DataLoader(val_ds, BATCH_SIZE, shuffle=False)
+test_dl = DataLoader(test_ds, BATCH_SIZE, shuffle=False)
 
-model     = TrafficCNN().to(DEVICE)
+model = TrafficCNN().to(DEVICE)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=LR)
 
-best_val_loss  = float("inf")
-wait       = 0
+best_val_loss = float("inf")
+wait = 0
 train_accs = []
 va_accs = []
 
